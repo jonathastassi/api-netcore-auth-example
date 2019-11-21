@@ -1,17 +1,24 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using MongoDB.Driver;
+using ShopAuth.Data;
 using ShopAuth.Models;
 
 namespace ShopAuth.Repositories
 {
-    public static class UserRepository
+    public class UserRepository : IUserRepository
     {
-        public static User Get(string username, string password)
+        private readonly MongoDbContext context;
+
+        public UserRepository(MongoDbContext context)
         {
-            var users = new List<User>();
-            users.Add(new User { Id = 1, Username = "batma", Password = "batman", Role = "Manager" });
-            users.Add(new User { Id = 2, Username = "robin", Password = "robin", Role = "employee" });
-            return users.Where(x => x.Username.ToLower() == username.ToLower() && x.Password == password).FirstOrDefault();
+            this.context = context;
+        }
+
+        public Task<User> Get(string username, string password)
+        {
+            return this.context.Users.Find(u => u.Username.ToLower() == username.ToLower() && u.Password == password).FirstOrDefaultAsync();
         }
     }
 }
