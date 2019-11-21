@@ -11,18 +11,32 @@ namespace ShopAuth.Controllers
     [Route("v1/account")]
     public class HomeController : Controller
     {
+        private readonly IUserRepository repository;
+
+        public HomeController(IUserRepository repository)
+        {
+            this.repository = repository;
+        }
+
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
         public async Task<ActionResult<dynamic>> Authenticate([FromBody]User model)
         {
-            var user = UserRepository.Get(model.Username, model.Password);
+            if (string.IsNullOrEmpty(model.Username))
+                return NotFound(new { message = "Username não informado!" });
+
+            if (string.IsNullOrEmpty(model.Password))
+                return NotFound(new { message = "Senha não informada!" });
+
+            var user = await this.repository.Get(model.Username, model.Password);
 
             if (user == null)
                 return NotFound(new { message = "Usuário ou senha inválidos" });
 
             var token = TokenService.GenerateToken(user);
             user.Password = "";
+            
             return new
             {
                 user = user,
