@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using ShopAuth.Data;
+using ShopAuth.Repositories;
 
 namespace ShopAuth
 {
@@ -28,6 +30,14 @@ namespace ShopAuth
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            MongoDbContext.ConnectionString = Configuration.GetSection("MongoConnection:ConnectionString").Value;
+            MongoDbContext.DatabaseName = Configuration.GetSection("MongoConnection:Database").Value;
+            MongoDbContext.IsSSL = Convert.ToBoolean(this.Configuration.GetSection("MongoConnection:IsSSL").Value);
+
+            services.AddScoped<MongoDbContext>();
+
+            services.AddTransient<IUserRepository, UserRepository>();
+
             services.AddCors();
             services.AddControllers();
             
